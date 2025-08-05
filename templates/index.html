@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Amazon Price Reminder</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+  particlesJS.load('particles-js', '/static/particles.json', function() {
+    console.log('✅ particles.js config loaded');
+  });
+</script>
+
+
+<style>
+  :root {
+    --primary: #ff9900;
+    --bg-dark: #121212;
+    --card-glass: rgba(30, 30, 30, 0.65);
+    --glass-border: rgba(255,255,255,0.12);
+    --success: #80ffd0;
+    --text-color: #eee;
+    --card-blur: 22px;
+    --shadow-glass: rgba(0, 0, 0, 0.5);
+  }
+  html,body {
+    height: 100%;
+    margin: 0;
+    background: linear-gradient(135deg, #0c0c0c 0%, #1a1a1a 100%);
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-color);
+    overflow-x: hidden;
+  }
+  #particles-js {
+    position: fixed;
+    z-index: 0;
+    top:0; left:0; width:100vw; height:100vh;
+    background: radial-gradient(circle at center, #1a1a1a, #0c0c0c);
+  }
+  .page-container {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    justify-content: flex-start;
+    padding: 3vmin 1rem 6vmin 1rem;
+  }
+  .glass-card {
+    background: var(--card-glass);
+    box-shadow: 0 12px 63px var(--shadow-glass);
+    border-radius: 24px;
+    border: 1.5px solid var(--glass-border);
+    backdrop-filter: blur(var(--card-blur));
+    -webkit-backdrop-filter: blur(var(--card-blur));
+    max-width: 460px;
+    margin: 2.5rem auto 2rem auto;
+    width: 96vw;
+    padding: 3rem 2.5rem 2rem 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .glass-card h1 {
+    font-size: 2.1em;
+    margin: 0 0 0.7rem 0;
+    font-weight: 700;
+    color: var(--primary);
+    text-shadow: 0 0 8px rgba(255, 153, 0, 0.8);
+  }
+  .glass-card .amazon-logo {
+    margin-bottom: 1.3rem;
+  }
+  .glass-card p {
+    opacity: 0.8;
+    font-size: 1.1em;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+  }
+  .input-group label {
+    font-size: 1.05em;
+    margin-bottom: 0.18rem;
+    color: #bbb;
+    opacity: 0.85;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .input-group input {
+    width: 100%;
+    padding: 0.95em 1.1em;
+    border-radius: 14px;
+    background: rgba(50, 50, 50, 0.75);
+    font-size: 1.05em;
+    border: 1.5px solid rgba(255,255,255,0.1);
+    color: var(--text-color);
+    margin-bottom: 1.2rem;
+    transition: border-color 0.3s ease;
+  }
+  .input-group input:focus {
+    border-color: var(--primary);
+    outline: none;
+    box-shadow: 0 0 6px var(--primary);
+    background: rgba(50, 50, 50, 0.9);
+  }
+  .input-group {width: 100%; display: flex; flex-direction: column;}
+  button {
+    background: var(--primary);
+    border: none;
+    color: #222;
+    font-weight: 700;
+    padding: 1em 2rem;
+    border-radius: 14px;
+    font-size: 1.12em;
+    cursor: pointer;
+    letter-spacing: 0.15em;
+    margin-top: 1rem;
+    box-shadow: 0 8px 15px rgba(255, 153, 0, 0.6);
+    transition: background 0.3s ease, color 0.3s ease;
+  }
+  button:hover {
+    background: #ffb347;
+    color: #181818;
+  }
+  .notification {
+    margin-top: 1.4rem;
+    color: var(--success);
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-align: center;
+    display: none;
+    opacity: 0.95;
+    text-shadow: 0 0 6px var(--success);
+  }
+  .tabs {
+    display: flex;
+    gap: 1rem;
+    margin-top: 3rem;
+  }
+  .tab {
+    padding: 0.7em 1.6em;
+    font-size: 1.13em;
+    background: var(--card-glass);
+    color: var(--text-color);
+    border-radius: 16px;
+    cursor: pointer;
+    user-select: none;
+    border: 2.2px solid transparent;
+    font-weight: 700;
+    transition: background 0.3s, border 0.3s, color 0.3s;
+    min-width: 140px;
+    text-align: center;
+  }
+  .tab.active {
+    background: var(--primary);
+    color: #181818;
+    border-color: var(--primary);
+    box-shadow: 0 0 18px 3px var(--primary);
+  }
+  .tab-content {
+    margin-top: 2rem;
+    max-width: 900px;
+    width: 92vw;
+  }
+  .product-card {
+    background: var(--card-glass);
+    border-radius: 22px;
+    padding: 1.3em 1.3em;
+    margin-bottom: 1.4em;
+    display: flex;
+    gap: 1em;
+    align-items: center;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.3);
+    border: 1.3px solid var(--glass-border);
+    position: relative;
+    min-height: 110px;
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+  .product-card img {
+    height: 90px;
+    width: 90px;
+    object-fit: contain;
+    border-radius: 12px;
+    border: 1.4px solid var(--glass-border);
+    background: #1c1c1c;
+  }
+  .product-info {
+    flex-grow: 1;
+  }
+  .product-title {
+    font-size: 1.2em;
+    font-weight: 700;
+    margin: 0 0 0.3em 0;
+    color: var(--primary);
+    line-height: 1.22;
+    word-break: break-word;
+  }
+  .product-url {
+    font-size: 1em;
+    color: #80ffd0;
+    cursor: pointer;
+    margin-bottom: 0.3em;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    overflow: hidden;
+    display: block;
+    width: 95%;
+  }
+  .product-target,
+  .product-current,
+  .product-status {
+    font-size: 1em;
+    margin-bottom: 0.3em;
+  }
+  .product-status.met {
+    color: #4caf50;
+  }
+  .product-status.tracking {
+    color: #ffecb3;
+  }
+  @media (max-width: 600px) {
+    .glass-card {
+      padding: 1.7rem 0.8rem 1.5rem 0.8rem;
+    }
+    h1 {
+      font-size: 1.2rem;
+    }
+    .tabs {
+      gap: 0.4em;
+    }
+    .product-card {
+      padding: 1em 0.6em;
+    }
+    .product-card img {
+      height: 70px;
+      width: 70px;
+    }
+  }
+
+  .backdrop-blur {
+    background: rgba(255, 255, 255, 0.1); /* Slight white tint */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px); /* For Safari */
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+</style>
+</head>
+<body>
+<div id="particles-js"></div>
+<div class="page-container">
+  <div class="glass-card">
+    <div class="amazon-logo" aria-label="Amazon logo">
+      <svg viewBox="0 0 400 120" width="112" height="34" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <text x="0" y="90" font-family="Montserrat" font-weight="bold" font-size="92" fill="#ff9900">amazon</text>
+        <path d="M71 102 Q130 116 187 101" stroke="#FF9900" stroke-width="7" fill="none" stroke-linecap="round"/>
+        <circle cx="187" cy="101" r="6.5" fill="#232525" stroke="#FF9900" stroke-width="5"/>
+        <ellipse cx="64" cy="103" rx="7" ry="5.5" fill="#232525" stroke="#FF9900" stroke-width="5"/>
+      </svg>
+    </div>
+    <h1>Amazon Price Reminder</h1>
+    <p>Could you be any more tired of checking Amazon prices? 
+    Just toss in your email, the link, and that magical number you wish it cost and we’ll stalk the page until Amazon finally agrees with you.
+    
+    </p>
+    <form id="reminderForm" autocomplete="off">
+      <div class="input-group">
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="e.g. name@email.com" />
+        <label for="productUrl">Amazon Product Link</label>
+        <input type="url" id="productUrl" placeholder="Paste Amazon URL" />
+        <label for="targetPrice">Target Price ($, € etc.)</label>
+        <input type="number" step="0.01" min="0" id="targetPrice" placeholder="e.g. 29.99" />
+      </div>
+      <button type="submit">Track Price</button>
+    </form>
+    <div class="notification" id="notify"></div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" data-tab="allProductsTab">All Products</div>
+    <div class="tab" data-tab="latestProductTab">Latest Product</div>
+  </div>
+  <div id="allProductsTab" class="tab-content"></div>
+  <div id="latestProductTab" class="tab-content" style="display:none;"></div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
+<script>
+  // Load the particles.js config from CDN - you can use your own config URL
+  particlesJS.load('particles-js', 'https://cdn.jsdelivr.net/gh/VincentGarreau/particles.js/particles.json', function() {});
+
+  const notify = document.getElementById('notify');
+  const allProductsTabBtn = document.querySelector('.tab[data-tab="allProductsTab"]');
+  const latestProductTabBtn = document.querySelector('.tab[data-tab="latestProductTab"]');
+  const allProductsTab = document.getElementById('allProductsTab');
+  const latestProductTab = document.getElementById('latestProductTab');
+  const form = document.getElementById('reminderForm');
+
+  allProductsTabBtn.onclick = () => {
+    allProductsTab.style.display = 'block';
+    latestProductTab.style.display = 'none';
+    allProductsTabBtn.classList.add('active');
+    latestProductTabBtn.classList.remove('active');
+  };
+  latestProductTabBtn.onclick = () => {
+    allProductsTab.style.display = 'none';
+    latestProductTab.style.display = 'block';
+    allProductsTabBtn.classList.remove('active');
+    latestProductTabBtn.classList.add('active');
+  };
+
+  async function fetchProducts() {
+    try {
+      const res = await fetch('/product/status');
+      return await res.json();
+    } catch (e) {
+      console.error('Fetch products error:', e);
+      return [];
+    }
+  }
+
+  function renderProductCard(p) {
+    return `
+      <div class="product-card">
+        <img src="${p.img_url || 'https://m.media-amazon.com/images/I/71o8Q5XJS5L._AC_SY355_.jpg'}" alt="Product Image" />
+        <div class="product-info">
+          <div class="product-title">${p.name}</div>
+          <div class="product-url" title="${p.url}" onclick="window.open('${p.url}', '_blank')">${p.url.length > 40 ? p.url.slice(0, 37) + '…' : p.url}</div>
+          <div class="product-target">Target Price: $${p.target_price.toFixed(2)}</div>
+          <div class="product-current">Current Price: $${p.current_price !== null ? p.current_price.toFixed(2) : 'N/A'}</div>
+          <div class="product-status ${p.met ? 'met' : 'tracking'}">${p.met ? 'Target Met' : 'Tracking'}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  async function updateAllProducts() {
+    const products = await fetchProducts();
+    if (!products.length) {
+      allProductsTab.innerHTML = '<p>No tracked products.</p>';
+      return;
+    }
+    allProductsTab.innerHTML = products.map(renderProductCard).join('');
+  }
+
+  async function updateLatestProduct() {
+    const products = await fetchProducts();
+    if (!products.length) {
+      latestProductTab.innerHTML = '<p>No tracked products.</p>';
+      return;
+    }
+    const latest = products[products.length - 1];
+    latestProductTab.innerHTML = renderProductCard(latest);
+  }
+
+  async function refreshTabs() {
+    await Promise.all([
+      updateAllProducts(),
+      updateLatestProduct()
+    ]);
+  }
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const email = document.getElementById('email').value.trim();
+    const url = document.getElementById('productUrl').value.trim();
+    const targetPrice = document.getElementById('targetPrice').value.trim();
+
+    if (!email || !url || !targetPrice) {
+      notify.style.color = '#ff6464';
+      notify.textContent = 'Please fill all fields.';
+      notify.style.display = 'block';
+      setTimeout(() => { notify.style.display = 'none'; }, 2500);
+      return;
+    }
+    if (!/amazon\./i.test(url)) {
+      notify.style.color = '#ff6464';
+      notify.textContent = 'Please enter a valid Amazon product URL.';
+      notify.style.display = 'block';
+      setTimeout(() => { notify.style.display = 'none'; }, 2500);
+      return;
+    }
+    notify.style.color = 'var(--text-color)';
+    notify.textContent = 'Tracking product...';
+    notify.style.display = 'block';
+
+    try {
+      const res = await fetch('/product/add', {
+        method: 'POST',
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({url, name: '', target_price: parseFloat(targetPrice), email})
+      });
+      const json = await res.json();
+      if (res.ok && json.status === 'success') {
+        await refreshTabs();
+        notify.style.color = '#80ffd0';
+        notify.textContent = '✅ Product is being tracked!';
+        form.reset();
+      } else {
+        notify.style.color = '#ff6464';
+        notify.textContent = json.message || 'Failed to add product.';
+      }
+    } catch (err) {
+      notify.style.color = '#ff6464';
+      notify.textContent = 'Server error. Try again later.';
+    }
+    setTimeout(() => { notify.style.display = 'none'; }, 3500);
+  });
+
+  window.addEventListener('load', () => {
+    refreshTabs();
+  });
+</script>
+</body>
+</html>
