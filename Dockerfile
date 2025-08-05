@@ -1,15 +1,29 @@
+# Use the official Python 3.11 slim image as base
 FROM python:3.11-slim
 
-# Install Chrome and dependencies
+# Install Chrome and its dependencies, then clean apt cache to reduce image size
 RUN apt-get update && apt-get install -y \
-    wget curl gnupg unzip fonts-liberation libnss3 libfontconfig1 libgtk-3-0 libx11-xcb1 xvfb
+    wget \
+    curl \
+    gnupg \
+    unzip \
+    fonts-liberation \
+    libnss3 \
+    libfontconfig1 \
+    libgtk-3-0 \
+    libx11-xcb1 \
+    xvfb \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Chrome
+# Add Google Chrome official signing key and repository, then install Chrome stable
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | apt-key add - \
-    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google.list \
-    && apt-get update && apt-get install -y google-chrome-stable
+    && echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update && apt-get install -y google-chrome-stable \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install ChromeDriver
+# Install matching ChromeDriver version based on installed Chrome
 RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') \
     && CHROMEDRIVER_VERSION=$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE_${CHROME_VERSION%.*}) \
     && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/${CHROMEDRIVER_VERSION}/chromedriver_linux64.zip \
@@ -17,12 +31,18 @@ RUN CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') \
     && rm /tmp/chromedriver.zip \
     && chmod +x /usr/local/bin/chromedriver
 
-
+# Set working directory in container
 WORKDIR /app
+
+# Copy requirements and install Python dependencies
 COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the application code to the container
 COPY . /app/
 
-ENV PORT 10000
+# Set environment variable for the port; Render sets $PORT at runtime
+ENV PORT=10000
 
-CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:$PORT", "app_1:app"]
+# Command to run Gunicorn server, note app module changed from app_1 to app
+CMD ["gunicorn", "-w", "3", "-b", "0.0.0.0:$PORT", "app:app"]
